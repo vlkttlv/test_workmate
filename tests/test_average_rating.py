@@ -1,4 +1,3 @@
-import io
 import csv
 import tempfile
 from reports.average_rating import AverageRatingReport
@@ -6,7 +5,9 @@ from reports.average_rating import AverageRatingReport
 
 def create_csv_file(data):
     """Создаёт временный CSV-файл и возвращает путь к нему"""
-    tmp = tempfile.NamedTemporaryFile(mode="w+", newline="", delete=False, encoding="utf-8")
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w+", newline="", delete=False, encoding="utf-8"
+        )
     writer = csv.DictWriter(tmp, fieldnames=["name", "brand", "price", "rating"])
     writer.writeheader()
     writer.writerows(data)
@@ -15,6 +16,9 @@ def create_csv_file(data):
 
 
 def test_average_rating_report_single_file():
+    """
+    Тестирует формирование отчёта AverageRatingReport на одном CSV-файле
+    """
     data = [
         {"name": "iphone", "brand": "apple", "price": "999", "rating": "4.9"},
         {"name": "samsung s23", "brand": "samsung", "price": "1199", "rating": "4.8"},
@@ -33,6 +37,9 @@ def test_average_rating_report_single_file():
 
 
 def test_average_rating_report_multiple_files():
+    """
+    Тестирует формирование отчёта AverageRatingReport на нескольких CSV-файлах
+    """
     data1 = [
         {"name": "iphone", "brand": "apple", "price": "999", "rating": "4.9"},
         {"name": "samsung s23", "brand": "samsung", "price": "1199", "rating": "4.8"},
@@ -48,7 +55,6 @@ def test_average_rating_report_multiple_files():
     report = AverageRatingReport()
     result = report.generate([path1, path2])
 
-    # Средние: apple (4.8), samsung (4.8), xiaomi (4.6)
     assert result == [
         {"brand": "apple", "average_rating": 4.8},
         {"brand": "samsung", "average_rating": 4.8},
@@ -57,6 +63,10 @@ def test_average_rating_report_multiple_files():
 
 
 def test_average_rating_report_ignores_whitespace_in_brand():
+    """
+    Проверяет, что метод generate корректно обрезает лишние пробелы
+    в названии бренда перед подсчётом среднего рейтинга
+    """
     data = [
         {"name": "iphone", "brand": "  apple  ", "price": "999", "rating": "4.9"},
     ]

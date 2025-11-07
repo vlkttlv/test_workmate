@@ -1,5 +1,5 @@
-import argparse
 import sys
+import argparse
 from tabulate import tabulate
 from reports.average_rating import AverageRatingReport
 
@@ -13,14 +13,19 @@ def parse_args():
     """
     Разбирает аргументы командной строки
     """
-    parser = argparse.ArgumentParser(description="Анализ рейтингов брендов по CSV-файлам")
+    parser = argparse.ArgumentParser(
+        description="Анализ рейтингов брендов по CSV-файлам"
+        )
     parser.add_argument(
-        "--files", nargs="+", required=True, help="Пути к CSV-файлам с данными о товарах"
+        "--files",
+        nargs="+",
+        required=True,
+        help="Пути к CSV-файлам с данными о товарах"
         )
     parser.add_argument(
         "--report", required=True, help="Тип отчета"
         )
-    return parser.parse_args() # возвращаем объект с аргументами
+    return parser.parse_args()  # возвращаем объект с аргументами
 
 
 def main():
@@ -29,7 +34,10 @@ def main():
     # проверка, существует ли запрошенный отчёт в словаре REPORTS
     if args.report not in REPORTS:
         print(f"Неизвестный отчет: {args.report}", file=sys.stderr)
-        print(f"Доступные отчеты: {', '.join(REPORTS.keys())}", file=sys.stderr)
+        print(
+            f"Доступные отчеты: {', '.join(REPORTS.keys())}",
+            file=sys.stderr
+            )
         sys.exit(1)
 
     # получаем класс отчёта и создаём его экземпляр

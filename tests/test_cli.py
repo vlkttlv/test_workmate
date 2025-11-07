@@ -1,4 +1,3 @@
-import io
 import sys
 import tempfile
 import csv
@@ -7,7 +6,10 @@ from main import main
 
 
 def create_csv_file(data):
-    tmp = tempfile.NamedTemporaryFile(mode="w+", newline="", delete=False, encoding="utf-8")
+    """Создаёт временный CSV-файл и возвращает путь к нему"""
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w+", newline="", delete=False, encoding="utf-8"
+        )
     writer = csv.DictWriter(tmp, fieldnames=["name", "brand", "price", "rating"])
     writer.writeheader()
     writer.writerows(data)
@@ -16,14 +18,18 @@ def create_csv_file(data):
 
 
 def test_cli_average_rating(monkeypatch, capsys):
-    """Проверяет успешный запуск CLI и корректный вывод таблицы."""
+    """Проверяет успешный запуск CLI и корректный вывод таблицы"""
     data = [
         {"name": "iphone", "brand": "apple", "price": "999", "rating": "4.9"},
         {"name": "samsung", "brand": "samsung", "price": "1199", "rating": "4.8"},
     ]
     path = create_csv_file(data)
 
-    monkeypatch.setattr(sys, "argv", ["main.py", "--files", path, "--report", "average-rating"])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["main.py", "--files", path, "--report", "average-rating"]
+        )
 
     main()
 
@@ -34,8 +40,12 @@ def test_cli_average_rating(monkeypatch, capsys):
 
 
 def test_cli_invalid_report(monkeypatch, capsys):
-    """Проверяет, что при неизвестном типе отчёта CLI завершается с ошибкой."""
-    monkeypatch.setattr(sys, "argv", ["main.py", "--files", "file.csv", "--report", "unknown-report"])
+    """Проверяет, что при неизвестном типе отчёта CLI завершается с ошибкой"""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["main.py", "--files", "file.csv", "--report", "unknown-report"]
+        )
     with pytest.raises(SystemExit):
         main()
 
@@ -44,11 +54,14 @@ def test_cli_invalid_report(monkeypatch, capsys):
 
 
 def test_cli_file_not_found(monkeypatch, capsys):
-    """Проверяет обработку ситуации, когда указанный CSV-файл не найден."""
+    """Проверяет обработку кейса, когда указанный CSV-файл не найден"""
     fake_path = "nonexistent.csv"
-    monkeypatch.setattr(sys, "argv", ["main.py", "--files", fake_path, "--report", "average-rating"])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["main.py", "--files", fake_path, "--report", "average-rating"]
+        )
 
-    # main() должен завершиться с кодом выхода 1
     with pytest.raises(SystemExit) as e:
         main()
     assert e.value.code == 1

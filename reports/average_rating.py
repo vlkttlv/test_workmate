@@ -27,4 +27,6 @@ class AverageRatingReport:
             averages.append({"brand": brand, "average_rating": avg})
 
         # сортируем бренды по среднему рейтингу в порядке убывания
-        return sorted(averages, key=lambda x: x["average_rating"], reverse=True)
+        return sorted(averages,
+                      key=lambda x: x["average_rating"],
+                      reverse=True)
