@@ -30,6 +30,7 @@ pip install -r requirements.txt
 python main.py --files employees1.csv employees2.csv --report performance
 ```
 ### Пример вывода:
+<img width="1407" height="358" alt="image" src="https://github.com/user-attachments/assets/522dfd5e-4910-484c-a7e9-6400cb991e50" />
 
 
 ## Добавление новых отчётов
@@ -51,4 +52,5 @@ python -m pytest --cov=reports --cov=main -v
 ```
 
 Покрытие кода: 87%
+<img width="1627" height="503" alt="image" src="https://github.com/user-attachments/assets/bff7ff29-e294-4edb-9ebf-312a21d7760f" />
 
