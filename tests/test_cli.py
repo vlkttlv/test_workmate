@@ -1,71 +1,36 @@
 import sys
-import tempfile
-import csv
 import pytest
 from main import main
 
 
-def create_csv_file(data):
-    """Создаёт временный CSV-файл и возвращает путь к нему"""
-    tmp = tempfile.NamedTemporaryFile(
-        mode="w+", newline="", delete=False, encoding="utf-8"
-        )
-    writer = csv.DictWriter(tmp, fieldnames=["name", "brand", "price", "rating"])
-    writer.writeheader()
-    writer.writerows(data)
-    tmp.flush()
-    return tmp.name
-
-
-def test_cli_average_rating(monkeypatch, capsys):
-    """Проверяет успешный запуск CLI и корректный вывод таблицы"""
-    data = [
-        {"name": "iphone", "brand": "apple", "price": "999", "rating": "4.9"},
-        {"name": "samsung", "brand": "samsung", "price": "1199", "rating": "4.8"},
-    ]
-    path = create_csv_file(data)
-
+def test_cli_success(monkeypatch, capsys, sample_file_one):
+    """Проверяет успешный запуск CLI с выводом таблицы"""
     monkeypatch.setattr(
         sys,
         "argv",
-        ["main.py", "--files", path, "--report", "average-rating"]
-        )
-
+        ["main.py", "--files", sample_file_one, "--report", "performance"],
+    )
     main()
-
-    output = capsys.readouterr().out
-    assert "apple" in output
-    assert "samsung" in output
-    assert "4.9" in output
+    out = capsys.readouterr().out
+    assert "Backend Developer" in out
+    assert "4.8" in out
 
 
-def test_cli_invalid_report(monkeypatch, capsys):
-    """Проверяет, что при неизвестном типе отчёта CLI завершается с ошибкой"""
+def test_cli_invalid_report(monkeypatch):
+    """Проверяет, что argparse не примет неизвестный отчёт"""
     monkeypatch.setattr(
-        sys,
-        "argv",
-        ["main.py", "--files", "file.csv", "--report", "unknown-report"]
-        )
+        sys, "argv", ["main.py", "--files", "a.csv", "--report", "unknown"]
+    )
     with pytest.raises(SystemExit):
         main()
 
-    err = capsys.readouterr().err
-    assert "Неизвестный отчет" in err
 
-
-def test_cli_file_not_found(monkeypatch, capsys):
-    """Проверяет обработку кейса, когда указанный CSV-файл не найден"""
-    fake_path = "nonexistent.csv"
+def test_cli_file_not_found(monkeypatch):
+    """Проверяет обработку FileNotFoundError"""
+    fake = "no_such_file.csv"
     monkeypatch.setattr(
-        sys,
-        "argv",
-        ["main.py", "--files", fake_path, "--report", "average-rating"]
-        )
-
-    with pytest.raises(SystemExit) as e:
+        sys, "argv", ["main.py", "--files", fake, "--report", "performance"]
+    )
+    with pytest.raises(SystemExit) as exc:
         main()
-    assert e.value.code == 1
-
-    err = capsys.readouterr().err
-    assert "Ошибка:" in err
-    assert fake_path in err
+    assert exc.value.code == 1

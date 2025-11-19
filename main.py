@@ -1,54 +1,72 @@
+from typing import List
 import sys
 import argparse
 from tabulate import tabulate
-from reports.average_rating import AverageRatingReport
+from reports.base import Report
+from reports.performance import PerformanceReport
 
-
-REPORTS = {
-    "average-rating": AverageRatingReport,
+# Словарь доступных отчётов
+REPORTS: dict[str, type[Report]] = {
+    "performance": PerformanceReport,
 }
 
 
-def parse_args():
+def parse_args(argv: List[str] | None = None) -> argparse.Namespace:
     """
     Разбирает аргументы командной строки
     """
     parser = argparse.ArgumentParser(
-        description="Анализ рейтингов брендов по CSV-файлам"
-        )
+        description="Анализ эффективности работы разработчиков"
+    )
     parser.add_argument(
         "--files",
         nargs="+",
         required=True,
-        help="Пути к CSV-файлам с данными о товарах"
-        )
+        help="Пути к CSV-файлам с данными (можно передать несколько).",
+    )
     parser.add_argument(
-        "--report", required=True, help="Тип отчета"
-        )
-    return parser.parse_args()  # возвращаем объект с аргументами
+        "--report",
+        required=True,
+        choices=list(REPORTS.keys()),
+        help="Тип отчёта. Доступные: %(choices)s",
+    )
+    return parser.parse_args(argv)
 
 
-def main():
-    args = parse_args()
+def main(argv: List[str] | None = None) -> None:
+    """Точка входа в приложение"""
+    args = parse_args(argv)
 
-    # проверка, существует ли запрошенный отчёт в словаре REPORTS
-    if args.report not in REPORTS:
-        print(f"Неизвестный отчет: {args.report}", file=sys.stderr)
-        print(
-            f"Доступные отчеты: {', '.join(REPORTS.keys())}",
-            file=sys.stderr
-            )
-        sys.exit(1)
+    report_name: str = args.report
+    files: List[str] = args.files
 
-    # получаем класс отчёта и создаём его экземпляр
-    report_class = REPORTS[args.report]()
+    # Получаем класс отчёта по имени и создаём экземпляр
+    report_cls = REPORTS[report_name]
+    report = report_cls()
+
     try:
-        data = report_class.generate(args.files)
-    except FileNotFoundError as e:
-        print(f"Ошибка: {e}", file=sys.stderr)
+        data = report.generate(files)
+    except FileNotFoundError as exc:
+        print(f"Ошибка: {exc}", file=sys.stderr)
+        sys.exit(1)
+    except KeyError as exc:
+        print(
+            f"Ошибка: в файле отсутствует ожидаемая колонка: {exc}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    except ValueError as exc:
+        print(
+            f"Ошибка: неверный формат числа в колонке performance: {exc}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
-    print(tabulate(data, headers="keys", tablefmt="pretty"))
+    # Вывод в консоль в виде таблицы
+    if data:
+        print(tabulate(data, headers="keys", tablefmt="pretty"))
+    else:
+        print("Нет данных для отображения.")
 
 
 if __name__ == "__main__":
